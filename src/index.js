@@ -1,9 +1,26 @@
 import channels from './channels/index';
-import callbackObject from './callback';
+import callbackCenter from './callback_center';
 
 class PayStar {
   constructor() {
     this.charge = {};
+  }
+
+  setUrlReturnCallback(callback, urlReturnChannels) {
+    if (typeof callback === 'function') {
+      callbackCenter.urlReturnCallback = callback;
+    } else {
+      throw new Error('callback need to be a function');
+    }
+
+    if (typeof channels !== 'undefined') {
+      if (Array.isArray(channels)) {
+        callbackCenter.urlReturnChannels = urlReturnChannels;
+      } else {
+        throw new Error('channels need to be an array');
+      }
+    }
+    return this;
   }
 
   pay(charge, callback) {
@@ -20,7 +37,7 @@ class PayStar {
     } else if (typeof callback !== 'function') {
       throw new Error('Callback must be a function.');
     } else {
-      callbackObject.callback = callback;
+      callbackCenter.callback = callback;
     }
     channels[channel].handleCharge(charge);
   }

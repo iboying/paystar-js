@@ -1,7 +1,7 @@
 /**
  * 微信H5支付
  */
-import callback from '../callback';
+import callbackCenter from '../callback_center';
 import utils from '../utils';
 
 const hasOwn = {}.hasOwnProperty;
@@ -14,7 +14,7 @@ export default {
     } else if (typeof credential === 'object' && hasOwn.call(credential, 'url')) {
       utils.redirectTo(`${credential.url}?${utils.queryStringify(credential, { encode: true })}`);
     } else {
-      callback.fail(callback.error('invalid_credential', 'credential 格式不正确'));
+      callbackCenter.fail(callbackCenter.error('invalid_credential', 'credential 格式不正确'));
     }
   },
 };

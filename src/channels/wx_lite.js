@@ -2,7 +2,7 @@
  * 微信小程序支付
  * channel: wx_lite
  */
-import callback from '../callback';
+import callbackCenter from '../callback_center';
 import store from '../store';
 
 const hasOwn = {}.hasOwnProperty;
@@ -15,7 +15,7 @@ export default {
     const missingFields =
       fields.reduce((ary, key) => (hasOwn.call(credential, key) ? ary : ary.concat(key)), []);
     if (missingFields.length > 0) {
-      callback.fail(callback.error('invalid_credential', `Missing field： ${missingFields.join('、')}`));
+      callbackCenter.fail(callbackCenter.error('invalid_credential', `Missing field： ${missingFields.join('、')}`));
     } else {
       store.wx_lite_credential = credential;
       this.beginPay(credential);
@@ -23,7 +23,7 @@ export default {
   },
   beginPay() {
     if (!isWxProgramClient) {
-      callback.fail(callback.error('invalid_client', '请在微信小程序中打开'));
+      callbackCenter.fail(callbackCenter.error('invalid_client', '请在微信小程序中打开'));
       return;
     }
     const wx_lite = store.wx_lite_credential;
@@ -31,15 +31,15 @@ export default {
     wx_lite.complete = (res) => {
       // 支付成功
       if (res.errMsg === 'requestPayment:ok') {
-        callback.success();
+        callbackCenter.success();
       }
       // 取消支付
       if (res.errMsg === 'requestPayment:fail cancel') {
-        callback.cancel();
+        callbackCenter.cancel();
       }
       // 支付验证签名失败
       if (!!res.err_code && !!res.err_desc) {
-        callback.fail(callback.error(res.err_desc, res));
+        callbackCenter.fail(callbackCenter.error(res.err_desc, res));
       }
     };
     wx.requestPayment(wx_lite);
