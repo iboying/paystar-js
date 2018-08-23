@@ -1,9 +1,9 @@
 /**
- * paystar-js v0.1.4
+ * paystar-js v0.1.5
  * (c) 2018 iboying(weboying@gmail.com)
  * @license MIT
  */
-var callbackCenter = {
+var callbackCenter$1 = {
   callback: undefined,
   urlReturnCallback: undefined,
   urlReturnChannels: [
@@ -45,8 +45,8 @@ var hasOwn = {}.hasOwnProperty;
 
 var utils = {
   redirectTo: function redirectTo(url, channel) {
-    if (callbackCenter.shouldReturnUrlByCallback(channel)) {
-      callbackCenter.triggerUrlReturnCallback(null, url);
+    if (callbackCenter$1.shouldReturnUrlByCallback(channel)) {
+      callbackCenter$1.triggerUrlReturnCallback(null, url);
       return;
     }
 
@@ -92,19 +92,23 @@ var alipay_pc_direct = {
     var credential = channel.credential[charge.channel];
     var baseUrl = ALIPAY_PC_DIRECT_URL;
 
-    if (hasOwn$1.call(credential, 'channel_url')) {
-      baseUrl = credential.channel_url;
-    }
-
-    if (!hasOwn$1.call(credential, '_input_charset')) {
-      if (hasOwn$1.call(credential, 'service')
-        && credential.service === 'create_direct_pay_by_user') {
-        credential._input_charset = 'utf-8';
+    if (typeof charge.credential === 'string') {
+      utils.redirectTo(charge.credential);
+    } else if (typeof charge.credential === 'object') {
+      if (hasOwn$1.call(credential, 'channel_url')) {
+        baseUrl = credential.channel_url;
       }
+      if (!hasOwn$1.call(credential, '_input_charset')) {
+        if (hasOwn$1.call(credential, 'service')
+          && credential.service === 'create_direct_pay_by_user') {
+          credential._input_charset = 'utf-8';
+        }
+      }
+      var query = utils.queryStringify(credential, charge.channel);
+      utils.redirectTo((baseUrl + "?" + query), channel);
+    } else {
+      callbackCenter.fail(callbackCenter.error('invalid_credential', 'credential 格式不正确'));
     }
-
-    var query = utils.queryStringify(credential, charge.channel);
-    utils.redirectTo((baseUrl + "?" + query), channel);
   },
 };
 
@@ -122,7 +126,7 @@ var alipay_qr = {
     if (hasOwn$2.call(credential, 'transaction_no')) {
       this.tradePay(credential.transaction_no);
     } else {
-      callbackCenter.fail(callbackCenter.error('invalid_credential', 'missing_field_transaction_no'));
+      callbackCenter$1.fail(callbackCenter$1.error('invalid_credential', 'missing_field_transaction_no'));
     }
   },
   tradePay: function tradePay(tradeNO) {
@@ -130,11 +134,11 @@ var alipay_qr = {
       // 通过传入交易号唤起快捷调用方式(注意tradeNO大小写严格)
       AlipayJSBridge.call('tradePay', { tradeNO: tradeNO }, function (data) {
         if (data.resultCode === '9000') {
-          callbackCenter.success();
+          callbackCenter$1.success();
         } else if (data.resultCode === '6001') {
-          callbackCenter.cancel(callbackCenter.error('Canceled', data.result));
+          callbackCenter$1.cancel(callbackCenter$1.error('Canceled', data.result));
         } else {
-          callbackCenter.fail(callbackCenter.error('Failed', data.result));
+          callbackCenter$1.fail(callbackCenter$1.error('Failed', data.result));
         }
       });
     });
@@ -175,7 +179,7 @@ var alipay_wap = {
       }
       utils.redirectTo((ALIPAY_WAP_URL + "?" + (utils.queryStringify(credential))));
     } else {
-      callbackCenter.fail(callbackCenter.error('invalid_credential', 'credential 格式不正确'));
+      callbackCenter$1.fail(callbackCenter$1.error('invalid_credential', 'credential 格式不正确'));
     }
   },
 };
@@ -196,7 +200,7 @@ var wx_pub = {
     var missingFields =
       fields.reduce(function (ary, key) { return (hasOwn$4.call(credential, key) ? ary : ary.concat(key)); }, []);
     if (missingFields.length > 0) {
-      callbackCenter.fail(callbackCenter.error('invalid_credential', ("Missing field： " + (missingFields.join('、')))));
+      callbackCenter$1.fail(callbackCenter$1.error('invalid_credential', ("Missing field： " + (missingFields.join('、')))));
     } else {
       store.credential = credential;
       this.prePayLogic();
@@ -223,11 +227,11 @@ var wx_pub = {
         function (res) {
           delete store.credential;
           if (res.err_msg === 'get_brand_wcpay_request:ok') {
-            callbackCenter.success();
+            callbackCenter$1.success();
           } else if (res.err_msg === 'get_brand_wcpay_request:cancel') {
-            callbackCenter.cancel();
+            callbackCenter$1.cancel();
           } else {
-            callbackCenter.fail(callbackCenter.error('wx_result_fail', res.err_msg));
+            callbackCenter$1.fail(callbackCenter$1.error('wx_result_fail', res.err_msg));
           }
         }
       );
@@ -249,7 +253,7 @@ var wx_wap = {
     } else if (typeof credential === 'object' && hasOwn$5.call(credential, 'mweb_url')) {
       utils.redirectTo(((credential.mweb_url) + "?" + (utils.queryStringify(credential, { encode: true }))));
     } else {
-      callbackCenter.fail(callbackCenter.error('invalid_credential', 'credential 格式不正确'));
+      callbackCenter$1.fail(callbackCenter$1.error('invalid_credential', 'credential 格式不正确'));
     }
   },
 };
@@ -269,7 +273,7 @@ var wx_lite = {
     var missingFields =
       fields.reduce(function (ary, key) { return (hasOwn$6.call(credential, key) ? ary : ary.concat(key)); }, []);
     if (missingFields.length > 0) {
-      callbackCenter.fail(callbackCenter.error('invalid_credential', ("Missing field： " + (missingFields.join('、')))));
+      callbackCenter$1.fail(callbackCenter$1.error('invalid_credential', ("Missing field： " + (missingFields.join('、')))));
     } else {
       store.wx_lite_credential = credential;
       this.beginPay(credential);
@@ -277,7 +281,7 @@ var wx_lite = {
   },
   beginPay: function beginPay() {
     if (!isWxProgramClient) {
-      callbackCenter.fail(callbackCenter.error('invalid_client', '请在微信小程序中打开'));
+      callbackCenter$1.fail(callbackCenter$1.error('invalid_client', '请在微信小程序中打开'));
       return;
     }
     var wx_lite = store.wx_lite_credential;
@@ -285,15 +289,15 @@ var wx_lite = {
     wx_lite.complete = function (res) {
       // 支付成功
       if (res.errMsg === 'requestPayment:ok') {
-        callbackCenter.success();
+        callbackCenter$1.success();
       }
       // 取消支付
       if (res.errMsg === 'requestPayment:fail cancel') {
-        callbackCenter.cancel();
+        callbackCenter$1.cancel();
       }
       // 支付验证签名失败
       if (!!res.err_code && !!res.err_desc) {
-        callbackCenter.fail(callbackCenter.error(res.err_desc, res));
+        callbackCenter$1.fail(callbackCenter$1.error(res.err_desc, res));
       }
     };
     wx.requestPayment(wx_lite);
@@ -315,14 +319,14 @@ var PayStar = function PayStar() {
 
 PayStar.prototype.setUrlReturnCallback = function setUrlReturnCallback (callback, urlReturnChannels) {
   if (typeof callback === 'function') {
-    callbackCenter.urlReturnCallback = callback;
+    callbackCenter$1.urlReturnCallback = callback;
   } else {
     throw new Error('callback need to be a function');
   }
 
   if (typeof channels !== 'undefined') {
     if (Array.isArray(channels)) {
-      callbackCenter.urlReturnChannels = urlReturnChannels;
+      callbackCenter$1.urlReturnChannels = urlReturnChannels;
     } else {
       throw new Error('channels need to be an array');
     }
@@ -342,14 +346,14 @@ PayStar.prototype.pay = function pay (charge, callback) {
     return;
   }
 
-  callbackCenter.callback = callback;
+  callbackCenter$1.callback = callback;
 
   if (!channel) {
-    callbackCenter.fail(callbackCenter.error('Charge Error: ', 'There is no channel in charge object.'));
+    callbackCenter$1.fail(callbackCenter$1.error('Charge Error: ', 'There is no channel in charge object.'));
     return;
   }
   if (!channels[channel]) {
-    callbackCenter.fail(callbackCenter.error('Channel Error: ', ("The channel '" + channel + "' is not support.")));
+    callbackCenter$1.fail(callbackCenter$1.error('Channel Error: ', ("The channel '" + channel + "' is not support.")));
     return;
   }
 
