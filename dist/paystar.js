@@ -1,5 +1,5 @@
 /**
- * paystar-js v0.1.5
+ * paystar-js v0.1.6
  * (c) 2018 iboying(weboying@gmail.com)
  * @license MIT
  */
@@ -91,7 +91,6 @@ var ALIPAY_PC_DIRECT_URL = 'https://mapi.alipay.com/gateway.do';
 
 var alipay_pc_direct = {
   handleCharge: function handleCharge(charge) {
-    var credential = channel.credential[charge.channel];
     var baseUrl = ALIPAY_PC_DIRECT_URL;
 
     if (typeof charge.credential === 'string') {

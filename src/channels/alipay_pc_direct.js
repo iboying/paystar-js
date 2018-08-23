@@ -9,7 +9,6 @@ const ALIPAY_PC_DIRECT_URL = 'https://mapi.alipay.com/gateway.do';
 
 export default {
   handleCharge(charge) {
-    const credential = channel.credential[charge.channel];
     let baseUrl = ALIPAY_PC_DIRECT_URL;
 
     if (typeof charge.credential === 'string') {

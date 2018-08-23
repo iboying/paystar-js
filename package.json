@@ -1,6 +1,6 @@
 {
   "name": "paystar-js",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A front-end multi-platform payment module.",
   "main": "dist/paystar.js",
   "module": "dist/paystar.esm.js",
