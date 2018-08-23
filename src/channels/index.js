@@ -6,10 +6,10 @@ import wx_wap from './wx_wap';
 import wx_lite from './wx_lite';
 
 export default {
+  wx_lite,
   alipay_pc_direct,
   alipay_qr,
   alipay_wap,
   wx_pub,
   wx_wap,
-  wx_lite,
 };

@@ -12,6 +12,7 @@ export default {
     if (typeof window === 'undefined') {
       throw new Error(`\n Not a browser, redirect url: ${url} \n`);
     }
+
     window.location.href = url;
   },
   queryStringify(data = {}, channel, parentKey) {

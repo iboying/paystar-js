@@ -9,12 +9,12 @@ export default {
     this.callback = undefined;
   },
   cancel(err) {
-    const errorObject = err && this.error('Canceled', '支付取消');
+    const errorObject = err || this.error('Canceled', '支付取消');
     this.callback('cancel', errorObject);
     this.callback = undefined;
   },
   fail(err) {
-    const errorObject = err && this.error('failed', '支付失败');
+    const errorObject = err || this.error('failed', '支付失败');
     this.callback('fail', errorObject);
     this.callback = undefined;
   },

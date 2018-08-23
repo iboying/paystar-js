@@ -26,19 +26,26 @@ class PayStar {
   pay(charge, callback) {
     this.charge = charge;
     const { channel } = charge;
+
+    if (!callback) {
+      console.error('You should set a callback with "pay" method to process paying result.');
+      return;
+    } else if (typeof callback !== 'function') {
+      console.error('Callback must be a function.');
+      return;
+    }
+
+    callbackCenter.callback = callback;
+
     if (!channel) {
-      throw new Error('There is no channel in charge.');
+      callbackCenter.fail(callbackCenter.error('Charge Error: ', 'There is no channel in charge object.'));
+      return;
     }
     if (!channels[channel]) {
-      throw new Error('The channel is not support.');
+      callbackCenter.fail(callbackCenter.error('Channel Error: ', `The channel '${channel}' is not support.`));
+      return;
     }
-    if (!callback) {
-      throw new Error('You should set a callback with "pay" method to process paying result.');
-    } else if (typeof callback !== 'function') {
-      throw new Error('Callback must be a function.');
-    } else {
-      callbackCenter.callback = callback;
-    }
+
     channels[channel].handleCharge(charge);
   }
 }
